@@ -50,7 +50,6 @@
   .header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; height: 50px; background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 22px; }
   .header::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent 0%, var(--accent) 30%, var(--accent) 70%, transparent 100%); opacity: 0.2; }
   .site-name { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--neon); letter-spacing: 3px; text-transform: uppercase; }
-  .header-right { display: flex; align-items: center; gap: 16px; }
   .legend-row { display: flex; align-items: center; gap: 14px; padding-right: 14px; border-right: 1px solid var(--border); }
   .legend-item { display: flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 10px; color: var(--text-secondary); }
   .legend-dot { width: 7px; height: 7px; border-radius: 50%; }
@@ -182,15 +181,6 @@
 
 <div class="header">
   <span class="site-name">KilaInt</span>
-  <div class="header-right">
-    <div class="legend-row">
-      <div class="legend-item"><div class="legend-dot iran"></div>Iran / Proxy</div>
-      <div class="legend-item"><div class="legend-dot israel"></div>Israel / US</div>
-      <div class="legend-item"><div class="legend-dot unknown"></div>Unknown</div>
-    </div>
-    <div class="live-badge"><div class="live-dot"></div><span>LIVE</span></div>
-    <div class="refresh-timer" id="timer">Next refresh: 60s</div>
-  </div>
 </div>
 
 <div class="hud-compass" id="compass"></div>
