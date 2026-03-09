@@ -221,11 +221,42 @@ KNOWN_LOCATIONS = [
     "Dnipro", "Lviv", "Sumy", "Kursk", "Belgorod", "Moscow",
     # Africa
     "Khartoum", "Mogadishu", "Tripoli", "Benghazi",
+    # Iran - more cities/ports
+    "Bandar Abbas", "Bander Abbas", "Bandar Lengeh", "Bander Lengeh",
+    "Chabahar", "Ahvaz", "Kerman", "Mashhad", "Qom", "Arak",
+    "Sistan", "Baluchistan", "Khuzestan", "Hormozgan",
+    "Bandar Imam Khomeini", "Abadan", "Khorramshahr",
+    # Turkey / Cyprus
+    "Adana", "Ankara", "Istanbul", "Diyarbakir", "Hatay",
+    "Mersin", "Gaziantep", "Izmir", "Antalya",
+    "Cyprus", "Nicosia", "Larnaca",
+    # More Lebanon
+    "Tripoli Lebanon", "Jounieh", "Bekaa", "Hermel",
+    "Khiam", "Marjayoun", "Bint Jbeil",
+    # More Palestine/Israel
+    "Ashkelon", "Ashdod", "Beer Sheva", "Beersheba",
+    "Eilat", "Netanya", "Nazareth", "Tiberias",
+    "Sderot", "Kiryat Shmona", "Metula", "Acre",
+    "Khan al-Ahmar", "Bethlehem", "Jericho", "Qalqilya",
+    "Beit Lahia", "Shifa", "Al-Shifa",
+    # More Iraq
+    "Fallujah", "Ramadi", "Tikrit", "Samarra", "Najaf", "Karbala",
+    "Taji", "Balad", "Al-Asad", "Camp Buehring",
+    # More Syria
+    "Raqqa", "Palmyra", "Daraa", "Tartus", "Qamishli", "Manbij",
+    "Abu Kamal", "Deir Ezzor",
+    # Jordan
+    "Zarqa", "Irbid", "Aqaba", "Mafraq",
+    # Saudi Arabia
+    "Dammam", "Dhahran", "Tabuk", "Medina", "Yanbu", "Jubail",
+    # More Yemen
+    "Taiz", "Saada", "Dhamar", "Al Bayda", "Hajjah",
     # Strategic locations
     "Strait of Hormuz", "Red Sea", "Bab el-Mandeb", "Golan Heights",
     "Natanz", "Fordow", "Dimona", "Bushehr", "Parchin",
     "Al-Tanf", "Incirlik", "Al Udeid", "Ain al-Asad",
     "Suez Canal", "Persian Gulf", "Gulf of Oman",
+    "Arabian Sea", "Mediterranean",
     # General
     "Pentagon", "Kremlin", "White House", "United Nations",
 ]
@@ -284,6 +315,62 @@ LOCATION_COORDS: dict[str, tuple[float, float]] = {
     # Africa
     "Khartoum": (15.50, 32.56), "Mogadishu": (2.05, 45.32),
     "Tripoli": (32.90, 13.18), "Benghazi": (32.12, 20.09),
+    # Iran - more cities/ports
+    "Bandar Abbas": (27.19, 56.27), "Bander Abbas": (27.19, 56.27),
+    "Bandar Lengeh": (26.56, 54.88), "Bander Lengeh": (26.56, 54.88),
+    "Chabahar": (25.29, 60.64), "Ahvaz": (31.32, 48.68),
+    "Kerman": (30.28, 57.08), "Mashhad": (36.30, 59.60),
+    "Qom": (34.64, 50.88), "Arak": (34.09, 49.69),
+    "Sistan": (31.00, 61.50), "Baluchistan": (27.00, 63.00),
+    "Khuzestan": (31.50, 49.00), "Hormozgan": (27.00, 56.00),
+    "Bandar Imam Khomeini": (30.43, 49.08), "Abadan": (30.34, 48.30),
+    "Khorramshahr": (30.44, 48.17),
+    # Turkey / Cyprus
+    "Adana": (37.00, 35.32), "Ankara": (39.93, 32.86),
+    "Istanbul": (41.01, 28.98), "Diyarbakir": (37.91, 40.24),
+    "Hatay": (36.40, 36.35), "Mersin": (36.80, 34.63),
+    "Gaziantep": (37.07, 37.38), "Izmir": (38.42, 27.14),
+    "Antalya": (36.90, 30.70),
+    "Cyprus": (35.13, 33.43), "Nicosia": (35.17, 33.36),
+    "Larnaca": (34.92, 33.63),
+    # More Lebanon
+    "Tripoli Lebanon": (34.44, 35.83), "Jounieh": (33.98, 35.62),
+    "Bekaa": (33.85, 36.00), "Hermel": (34.39, 36.39),
+    "Khiam": (33.36, 35.64), "Marjayoun": (33.36, 35.59),
+    "Bint Jbeil": (33.12, 35.43),
+    # More Palestine/Israel
+    "Ashkelon": (31.67, 34.57), "Ashdod": (31.80, 34.65),
+    "Beer Sheva": (31.25, 34.79), "Beersheba": (31.25, 34.79),
+    "Eilat": (29.56, 34.95), "Netanya": (32.33, 34.86),
+    "Nazareth": (32.70, 35.30), "Tiberias": (32.79, 35.53),
+    "Sderot": (31.52, 34.60), "Kiryat Shmona": (33.21, 35.57),
+    "Metula": (33.28, 35.58), "Acre": (32.93, 35.08),
+    "Khan al-Ahmar": (31.80, 35.33), "Bethlehem": (31.70, 35.21),
+    "Jericho": (31.86, 35.46), "Qalqilya": (32.19, 34.97),
+    "Beit Lahia": (31.55, 34.50), "Shifa": (31.52, 34.45),
+    "Al-Shifa": (31.52, 34.45),
+    # More Iraq
+    "Fallujah": (33.35, 43.78), "Ramadi": (33.43, 43.31),
+    "Tikrit": (34.61, 43.68), "Samarra": (34.20, 43.87),
+    "Najaf": (32.00, 44.34), "Karbala": (32.62, 44.02),
+    "Taji": (33.52, 44.26), "Balad": (34.01, 44.15),
+    "Al-Asad": (33.78, 42.44), "Camp Buehring": (29.33, 47.66),
+    # More Syria
+    "Raqqa": (35.95, 39.01), "Palmyra": (34.56, 38.27),
+    "Daraa": (32.63, 36.10), "Tartus": (34.89, 35.89),
+    "Qamishli": (37.05, 41.23), "Manbij": (36.53, 37.96),
+    "Abu Kamal": (34.45, 40.92), "Deir Ezzor": (35.34, 40.14),
+    # Jordan
+    "Zarqa": (32.07, 36.09), "Irbid": (32.56, 35.85),
+    "Aqaba": (29.53, 35.01), "Mafraq": (32.34, 36.21),
+    # Saudi Arabia
+    "Dammam": (26.43, 50.10), "Dhahran": (26.30, 50.14),
+    "Tabuk": (28.38, 36.57), "Medina": (24.47, 39.61),
+    "Yanbu": (24.09, 38.06), "Jubail": (27.01, 49.66),
+    # More Yemen
+    "Taiz": (13.58, 44.02), "Saada": (16.94, 43.76),
+    "Dhamar": (14.54, 44.40), "Al Bayda": (14.17, 45.57),
+    "Hajjah": (15.69, 43.60),
     # Strategic locations
     "Strait of Hormuz": (26.56, 56.25), "Red Sea": (20.00, 38.00),
     "Bab el-Mandeb": (12.58, 43.33), "Golan Heights": (33.00, 35.80),
@@ -297,6 +384,7 @@ LOCATION_COORDS: dict[str, tuple[float, float]] = {
     # General / Buildings
     "Pentagon": (38.87, -77.06), "Kremlin": (55.75, 37.62),
     "White House": (38.90, -77.04), "United Nations": (40.75, -73.97),
+    "Arabian Sea": (15.00, 65.00), "Mediterranean": (35.00, 18.00),
 }
 
 
