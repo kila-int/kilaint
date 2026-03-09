@@ -10,29 +10,29 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
   :root {
-    --bg: #0b0f0a;
-    --bg-panel: #0c120b;
-    --bg-hover: rgba(160, 200, 80, 0.04);
-    --bg-subtle: #0f1a0d;
-    --bg-input: #162214;
-    --border: rgba(120, 160, 60, 0.1);
-    --border-strong: rgba(120, 160, 60, 0.2);
-    --text: #c8cdb8;
-    --text-secondary: #8a9272;
-    --text-muted: #556044;
-    --text-faint: #3a4a2c;
+    --bg: #1a2118;
+    --bg-panel: #222d20;
+    --bg-hover: rgba(160, 200, 80, 0.08);
+    --bg-subtle: #263024;
+    --bg-input: #2a3828;
+    --border: rgba(120, 160, 60, 0.18);
+    --border-strong: rgba(120, 160, 60, 0.32);
+    --text: #dde2d0;
+    --text-secondary: #a8b094;
+    --text-muted: #748264;
+    --text-faint: #566248;
     --accent: #a0c830;
-    --accent-dim: rgba(160, 200, 48, 0.1);
+    --accent-dim: rgba(160, 200, 48, 0.14);
     --neon: #b8e040;
-    --iran: #e04040;
-    --iran-light: rgba(224, 64, 64, 0.1);
-    --iran-mid: rgba(224, 64, 64, 0.22);
-    --israel: #4488ee;
-    --israel-light: rgba(68, 136, 238, 0.1);
-    --israel-mid: rgba(68, 136, 238, 0.22);
-    --unknown: #9070d0;
-    --unknown-light: rgba(144, 112, 208, 0.08);
-    --unknown-mid: rgba(144, 112, 208, 0.18);
+    --iran: #e85050;
+    --iran-light: rgba(232, 80, 80, 0.14);
+    --iran-mid: rgba(232, 80, 80, 0.26);
+    --israel: #5598ff;
+    --israel-light: rgba(85, 152, 255, 0.14);
+    --israel-mid: rgba(85, 152, 255, 0.26);
+    --unknown: #a080e0;
+    --unknown-light: rgba(160, 128, 224, 0.12);
+    --unknown-mid: rgba(160, 128, 224, 0.22);
     --font-mono: 'Share Tech Mono', monospace;
     --font-display: 'Chakra Petch', sans-serif;
     --font-body: 'Noto Sans', sans-serif;
@@ -43,7 +43,7 @@
   .leaflet-container { background: var(--bg) !important; }
   .leaflet-control-zoom { display: none; }
   .leaflet-control-attribution { display: none !important; }
-  .leaflet-tile-pane { filter: saturate(0.15) brightness(0.45) contrast(1.2) sepia(0.4) hue-rotate(50deg); }
+  .leaflet-tile-pane { }
 
   .header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; height: 50px; background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 22px; }
   .header::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent 0%, var(--accent) 30%, var(--accent) 70%, transparent 100%); opacity: 0.2; }
