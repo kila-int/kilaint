@@ -44,6 +44,8 @@
   .leaflet-control-zoom { display: none; }
   .leaflet-control-attribution { display: none !important; }
   .leaflet-tile-pane { }
+  .cluster-badge { background: none !important; border: none !important; }
+  .cluster-badge span { display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #111; font-family: var(--font-mono); font-size: 11px; font-weight: 700; border: 2px solid var(--bg-panel); }
 
   .header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; height: 50px; background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 22px; }
   .header::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent 0%, var(--accent) 30%, var(--accent) 70%, transparent 100%); opacity: 0.2; }
@@ -363,14 +365,36 @@ function mkP(e) {
 }
 
 // ═══ RENDER ═══
+function jitter(lat, lng, index, total) {
+  // Spread stacked markers in a spiral around the center point
+  if (total <= 1) return [lat, lng];
+  const r = 0.012 + 0.006 * Math.floor(index / 8); // radius grows with more markers
+  const angle = (index / total) * 2 * Math.PI + index * 0.5;
+  return [lat + r * Math.cos(angle), lng + r * Math.sin(angle)];
+}
+
 function render() {
   mks.forEach(m => map.removeLayer(m));
   mks = [];
   const ev = filt();
 
+  // Group events by location to detect stacking
+  const locCounts = {};
+  const locIndex = {};
+  ev.forEach(e => {
+    const key = e.lat.toFixed(2) + ',' + e.lng.toFixed(2);
+    locCounts[key] = (locCounts[key] || 0) + 1;
+    locIndex[key] = 0;
+  });
+
   ev.forEach(e => {
     const fc = FACTION_COLORS[e.f] || FACTION_COLORS.unknown;
-    const m = L.circleMarker([e.lat, e.lng], {
+    const key = e.lat.toFixed(2) + ',' + e.lng.toFixed(2);
+    const total = locCounts[key];
+    const idx = locIndex[key]++;
+    const [jLat, jLng] = jitter(e.lat, e.lng, idx, total);
+
+    const m = L.circleMarker([jLat, jLng], {
       radius: 7,
       fillColor: fc.fill,
       color: fc.stroke,
@@ -382,6 +406,21 @@ function render() {
     m.on('click', function() { this.openPopup(); });
     m.addTo(map);
     mks.push(m);
+
+    // Add count badge for first marker at a stacked location
+    if (idx === 0 && total > 1) {
+      const badge = L.marker([e.lat, e.lng], {
+        icon: L.divIcon({
+          className: 'cluster-badge',
+          html: `<span>${total}</span>`,
+          iconSize: [22, 22],
+          iconAnchor: [11, 11],
+        }),
+        interactive: false,
+      });
+      badge.addTo(map);
+      mks.push(badge);
+    }
   });
 
   renderFeed(ev);
