@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Kila Int -- FastAPI Backend
 ============================
@@ -21,6 +23,11 @@ import db
 import parser as intel_parser
 
 app = FastAPI(title="Kila Int API")
+
+
+@app.on_event("startup")
+def startup():
+    db.init_db()
 
 app.add_middleware(
     CORSMiddleware,

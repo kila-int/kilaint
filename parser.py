@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Kila Int -- Message parser / NLP layer
 =======================================
