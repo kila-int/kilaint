@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KilaInt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Chakra+Petch:wght@400;500;600;700&family=Noto+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  :root {
+    --bg: #0b0f0a;
+    --bg-panel: #0c120b;
+    --bg-hover: rgba(160, 200, 80, 0.04);
+    --bg-subtle: #0f1a0d;
+    --bg-input: #162214;
+    --border: rgba(120, 160, 60, 0.1);
+    --border-strong: rgba(120, 160, 60, 0.2);
+    --text: #c8cdb8;
+    --text-secondary: #8a9272;
+    --text-muted: #556044;
+    --text-faint: #3a4a2c;
+    --accent: #a0c830;
+    --accent-dim: rgba(160, 200, 48, 0.1);
+    --neon: #b8e040;
+    --iran: #e04040;
+    --iran-light: rgba(224, 64, 64, 0.1);
+    --iran-mid: rgba(224, 64, 64, 0.22);
+    --israel: #4488ee;
+    --israel-light: rgba(68, 136, 238, 0.1);
+    --israel-mid: rgba(68, 136, 238, 0.22);
+    --unknown: #9070d0;
+    --unknown-light: rgba(144, 112, 208, 0.08);
+    --unknown-mid: rgba(144, 112, 208, 0.18);
+    --font-mono: 'Share Tech Mono', monospace;
+    --font-display: 'Chakra Petch', sans-serif;
+    --font-body: 'Noto Sans', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--font-body); background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; width: 100vw; }
+  #map { width: 100%; height: 100%; z-index: 1; }
+  .leaflet-container { background: var(--bg) !important; }
+  .leaflet-control-zoom { display: none; }
+  .leaflet-control-attribution { display: none !important; }
+  .leaflet-tile-pane { filter: saturate(0.15) brightness(0.45) contrast(1.2) sepia(0.4) hue-rotate(50deg); }
+
+  .header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; height: 50px; background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 22px; }
+  .header::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent 0%, var(--accent) 30%, var(--accent) 70%, transparent 100%); opacity: 0.2; }
+  .site-name { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--neon); letter-spacing: 3px; text-transform: uppercase; }
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .legend-row { display: flex; align-items: center; gap: 14px; padding-right: 14px; border-right: 1px solid var(--border); }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 10px; color: var(--text-secondary); }
+  .legend-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .legend-dot.iran { background: var(--iran); }
+  .legend-dot.israel { background: var(--israel); }
+  .legend-dot.unknown { background: var(--unknown); opacity: 0.7; }
+  .live-badge { display: flex; align-items: center; gap: 7px; font-family: var(--font-mono); font-size: 10px; color: var(--accent); letter-spacing: 1px; }
+  .live-dot { width: 6px; height: 6px; background: var(--neon); border-radius: 50%; animation: lp 2s ease-in-out infinite; }
+  @keyframes lp { 0%,100%{opacity:1} 50%{opacity:0.2} }
+  .refresh-timer { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); letter-spacing: 0.5px; }
+
+  .hud-compass { position: fixed; top: 52px; left: 50%; transform: translateX(-50%); z-index: 998; pointer-events: none; font-family: var(--font-mono); font-size: 9px; color: var(--text-muted); display: flex; align-items: flex-start; gap: 0; opacity: 0.5; }
+  .compass-tick { display: flex; flex-direction: column; align-items: center; width: 14px; }
+  .compass-tick .line { width: 1px; height: 8px; background: var(--text-muted); }
+  .compass-tick.major .line { height: 14px; background: var(--accent); opacity: 0.5; }
+  .compass-tick .lbl { margin-top: 2px; font-size: 8px; color: var(--accent); opacity: 0.7; }
+
+  .sidebar { position: fixed; top: 50px; left: 0; bottom: 0; width: 278px; z-index: 999; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; }
+  .sidebar::-webkit-scrollbar { width: 3px; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 3px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sb-s { padding: 13px 15px; border-bottom: 1px solid var(--border); }
+  .sb-l { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 2.5px; color: var(--text-muted); margin-bottom: 9px; }
+
+  .time-row { display: flex; gap: 4px; flex-wrap: wrap; }
+  .t-btn { font-family: var(--font-mono); font-size: 10px; padding: 5px 10px; background: var(--bg-input); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; border-radius: 2px; letter-spacing: 0.5px; }
+  .t-btn:hover { border-color: var(--border-strong); color: var(--text); }
+  .t-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+
+  .tg-group { display: flex; flex-direction: column; gap: 5px; }
+  .tg-row { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 4px 0; }
+  .tg-row input { display: none; }
+  .sw { width: 30px; height: 15px; background: var(--bg-input); border-radius: 2px; position: relative; border: 1px solid var(--border); flex-shrink: 0; }
+  .sw::after { content:''; width: 9px; height: 9px; background: var(--text-muted); border-radius: 1px; position: absolute; top: 2px; left: 3px; transition: left 0.15s; }
+  .tg-row input:checked+.sw::after { left: 16px; }
+  .tg-row.iran input:checked+.sw{background:var(--iran-light);border-color:var(--iran)} .tg-row.iran input:checked+.sw::after{background:var(--iran)}
+  .tg-row.israel input:checked+.sw{background:var(--israel-light);border-color:var(--israel)} .tg-row.israel input:checked+.sw::after{background:var(--israel)}
+  .tg-row.unknown input:checked+.sw{background:var(--unknown-light);border-color:var(--unknown)} .tg-row.unknown input:checked+.sw::after{background:var(--unknown)}
+  .tg-row.st input:checked+.sw{background:var(--accent-dim);border-color:var(--accent)} .tg-row.st input:checked+.sw::after{background:var(--accent)}
+  .sw-lbl { font-size: 11.5px; color: var(--text-secondary); display: flex; align-items: center; gap: 7px; }
+  .sw-d { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+  .ch-list { display: flex; flex-direction: column; gap: 2px; max-height: 200px; overflow-y: auto; }
+  .ch-list::-webkit-scrollbar { width: 2px; }
+  .ch-list::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 2px; }
+  .ch-i { display: flex; align-items: center; gap: 8px; padding: 5px 6px; border-radius: 2px; cursor: pointer; }
+  .ch-i:hover { background: var(--bg-hover); }
+  .ch-i.on { background: var(--accent-dim); border-left: 2px solid var(--accent); }
+  .ch-d { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .ch-n { font-size: 11px; color: var(--text-secondary); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-mono); letter-spacing: 0.3px; }
+  .ch-i.on .ch-n { color: var(--text); }
+  .ch-c { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); }
+
+  .stats-g { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px; }
+  .st-b { padding: 8px; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 2px; text-align: center; }
+  .st-v { font-family: var(--font-mono); font-size: 18px; font-weight: 700; line-height: 1; margin-bottom: 2px; }
+  .st-l { font-size: 9px; color: var(--text-muted); font-family: var(--font-mono); letter-spacing: 0.5px; }
+  .st-v.ir { color: var(--iran); }
+  .st-v.il { color: var(--israel); }
+  .st-v.total { color: var(--neon); }
+
+  .feed { position: fixed; top: 50px; right: 0; bottom: 0; width: 326px; z-index: 999; background: var(--bg-panel); border-left: 1px solid var(--border); display: flex; flex-direction: column; transition: transform 0.3s; }
+  .feed.hide { transform: translateX(100%); }
+  .f-btn { position: fixed; right: 326px; top: 62px; z-index: 1001; width: 26px; height: 26px; background: var(--bg-panel); border: 1px solid var(--border); border-right: none; border-radius: 2px 0 0 2px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; transition: right 0.3s; }
+  .f-btn:hover { color: var(--accent); }
+  .f-btn.hide { right: 0; }
+  .feed-hdr { padding: 12px 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .feed-hdr span { font-family: var(--font-mono); font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-muted); }
+  .feed-count { font-family: var(--font-mono); font-size: 10px; color: var(--accent); }
+  .f-list { flex: 1; overflow-y: auto; padding: 3px 0; }
+  .f-list::-webkit-scrollbar { width: 3px; }
+  .f-list::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 3px; }
+
+  .fi { padding: 10px 15px; border-bottom: 1px solid var(--border); cursor: pointer; position: relative; }
+  .fi:hover { background: var(--bg-hover); }
+  .fi-top { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .fi-icon { font-size: 13px; flex-shrink: 0; line-height: 1; }
+  .fi-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .fi-dot.iran { background: var(--iran); }
+  .fi-dot.israel { background: var(--israel); }
+  .fi-dot.unknown { background: var(--unknown); opacity: 0.65; }
+  .fi-badge { font-family: var(--font-mono); font-size: 8px; text-transform: uppercase; letter-spacing: 1px; padding: 1px 5px; border-radius: 1px; font-weight: 600; }
+  .fi-badge.etype { background: rgba(160,200,48,0.06); color: var(--text-secondary); border: 1px solid var(--border); }
+  .fi-ch { font-family: var(--font-mono); font-size: 9px; color: var(--text-muted); letter-spacing: 0.3px; }
+  .fi-t { font-family: var(--font-mono); font-size: 9px; color: var(--text-faint); margin-left: auto; }
+  .fi-txt { font-size: 11px; color: var(--text-secondary); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .fi-loc { font-family: var(--font-mono); font-size: 9px; margin-top: 4px; opacity: 0.6; }
+  .fi-loc.iran { color: var(--iran); }
+  .fi-loc.israel { color: var(--israel); }
+  .fi-loc.unknown { color: var(--unknown); }
+
+  .leaflet-popup-content-wrapper { background: #0e160c !important; border: 1px solid var(--border-strong) !important; border-radius: 3px !important; box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important; padding: 0 !important; min-width: 270px; }
+  .leaflet-popup-tip { background: #0e160c !important; border: 1px solid var(--border-strong) !important; border-top:none !important; border-left:none !important; }
+  .leaflet-popup-close-button { color: var(--text-muted) !important; font-size: 18px !important; right: 8px !important; top: 8px !important; }
+  .leaflet-popup-close-button:hover { color: var(--accent) !important; }
+  .leaflet-popup-content { margin: 0 !important; }
+
+  .pi { padding: 14px; }
+  .pb { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+  .pbg { font-family: var(--font-mono); font-size: 8px; text-transform: uppercase; letter-spacing: 1.5px; padding: 3px 7px; border-radius: 2px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
+  .pbg .d { width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
+  .pbg.iran { background: var(--iran-light); color: var(--iran); border: 1px solid var(--iran-mid); }
+  .pbg.israel { background: var(--israel-light); color: var(--israel); border: 1px solid var(--israel-mid); }
+  .pbg.unknown { background: var(--unknown-light); color: var(--unknown); border: 1px solid var(--unknown-mid); }
+  .pbg.etype { background: rgba(160,200,48,0.05); color: var(--text-secondary); border: 1px solid var(--border); }
+  .ploc { font-family: var(--font-display); font-size: 15px; font-weight: 600; margin-bottom: 3px; color: var(--text); }
+  .ptm { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); margin-bottom: 10px; letter-spacing: 0.3px; }
+  .pdesc { font-size: 11.5px; color: var(--text-secondary); line-height: 1.65; margin-bottom: 11px; border-top: 1px solid var(--border); padding-top: 9px; }
+  .psrc { border-top: 1px solid var(--border); padding-top: 9px; }
+  .psrc-l { font-family: var(--font-mono); font-size: 8px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 6px; }
+  .psl { display: flex; align-items: center; gap: 7px; padding: 5px 8px; margin-bottom: 3px; border-radius: 2px; text-decoration: none; color: var(--text-secondary); font-size: 11px; background: rgba(160,200,48,0.03); border: 1px solid transparent; }
+  .psl:hover { background: var(--bg-hover); color: var(--text); border-color: var(--border); }
+  .psl .sc { font-family: var(--font-mono); font-size: 9px; color: var(--accent); opacity: 0.7; }
+  .coords { position: fixed; bottom: 10px; left: 290px; z-index: 999; font-family: var(--font-mono); font-size: 9px; color: var(--text-muted); background: var(--bg-panel); padding: 3px 10px; border: 1px solid var(--border); border-radius: 2px; letter-spacing: 0.5px; }
+
+  .hud-corner { position: fixed; z-index: 998; pointer-events: none; width: 30px; height: 30px; }
+  .hud-corner.tl { top: 52px; left: 280px; border-top: 1px solid var(--accent); border-left: 1px solid var(--accent); opacity: 0.15; }
+  .hud-corner.tr { top: 52px; right: 328px; border-top: 1px solid var(--accent); border-right: 1px solid var(--accent); opacity: 0.15; }
+  .hud-corner.bl { bottom: 2px; left: 280px; border-bottom: 1px solid var(--accent); border-left: 1px solid var(--accent); opacity: 0.15; }
+  .hud-corner.br { bottom: 2px; right: 328px; border-bottom: 1px solid var(--accent); border-right: 1px solid var(--accent); opacity: 0.15; }
+
+  .no-data { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px; color: var(--text-muted); font-family: var(--font-mono); font-size: 11px; gap: 8px; }
+
+  @media(max-width:1100px){ .sidebar{width:248px} .feed{width:290px} .legend-row,.hud-compass,.hud-corner{display:none} }
+  @media(max-width:800px){ .sidebar{display:none} .feed{width:100%} .coords{left:10px} .hud-corner{display:none} }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="site-name">KilaInt</span>
+  <div class="header-right">
+    <div class="legend-row">
+      <div class="legend-item"><div class="legend-dot iran"></div>Iran / Proxy</div>
+      <div class="legend-item"><div class="legend-dot israel"></div>Israel / US</div>
+      <div class="legend-item"><div class="legend-dot unknown"></div>Unknown</div>
+    </div>
+    <div class="live-badge"><div class="live-dot"></div><span>LIVE</span></div>
+    <div class="refresh-timer" id="timer">Next refresh: 60s</div>
+  </div>
+</div>
+
+<div class="hud-compass" id="compass"></div>
+<div class="hud-corner tl"></div>
+<div class="hud-corner tr"></div>
+<div class="hud-corner bl"></div>
+<div class="hud-corner br"></div>
+
+<div class="sidebar">
+  <div class="sb-s">
+    <div class="sb-l">Time Range</div>
+    <div class="time-row">
+      <button class="t-btn" data-hours="1">1h</button>
+      <button class="t-btn" data-hours="6">6h</button>
+      <button class="t-btn" data-hours="24">24h</button>
+      <button class="t-btn active" data-hours="72">3d</button>
+      <button class="t-btn" data-hours="168">7d</button>
+      <button class="t-btn" data-hours="720">30d</button>
+    </div>
+  </div>
+  <div class="sb-s">
+    <div class="sb-l">Attribution</div>
+    <div class="tg-group">
+      <label class="tg-row iran"><input type="checkbox" checked data-faction="iran"><span class="sw"></span><span class="sw-lbl"><span class="sw-d" style="background:var(--iran)"></span>Iran / Proxy</span></label>
+      <label class="tg-row israel"><input type="checkbox" checked data-faction="israel"><span class="sw"></span><span class="sw-lbl"><span class="sw-d" style="background:var(--israel)"></span>Israel / US</span></label>
+      <label class="tg-row unknown"><input type="checkbox" checked data-faction="unknown"><span class="sw"></span><span class="sw-lbl"><span class="sw-d" style="background:var(--unknown);opacity:.6"></span>Unknown</span></label>
+    </div>
+  </div>
+  <div class="sb-s">
+    <div class="sb-l">Channels</div>
+    <div class="ch-list" id="chList"></div>
+  </div>
+  <div class="sb-s">
+    <div class="sb-l">Summary</div>
+    <div class="stats-g">
+      <div class="st-b"><div class="st-v total" id="sT">-</div><div class="st-l">Total</div></div>
+      <div class="st-b"><div class="st-v ir" id="sI">-</div><div class="st-l">Iran</div></div>
+      <div class="st-b"><div class="st-v il" id="sL">-</div><div class="st-l">Israel</div></div>
+    </div>
+  </div>
+</div>
+
+<button class="f-btn" id="fBtn" onclick="togFeed()">&#9666;</button>
+<div class="feed" id="fPanel">
+  <div class="feed-hdr"><span>Live Feed</span><span class="feed-count" id="feedCount"></span></div>
+  <div class="f-list" id="fList"></div>
+</div>
+
+<div id="map"></div>
+<div class="coords" id="coords">32.0000N, 44.0000E</div>
+
+<script>
+// ═══ COMPASS HUD ═══
+(function(){
+  const c=document.getElementById('compass');
+  const dirs=['W','','','','NW','','','','N','','','','NE','','','','E','','','','SE','','','','S'];
+  let html='';
+  for(let i=0;i<25;i++){
+    const isMajor=i%4===0;
+    const lbl=dirs[i]||'';
+    html+=`<div class="compass-tick${isMajor?' major':''}"><div class="line"></div>${lbl?`<div class="lbl">${lbl}</div>`:''}</div>`;
+  }
+  c.innerHTML=html;
+})();
+
+const FACTION_COLORS = {
+  iran:    { fill: '#e04040', stroke: '#c03030', opacity: 0.85 },
+  israel:  { fill: '#4488ee', stroke: '#3070cc', opacity: 0.85 },
+  unknown: { fill: '#9070d0', stroke: '#7058b0', opacity: 0.55 },
+};
+
+// ═══ STATE ═══
+let tf = 72;
+let aF = new Set(['iran','israel','unknown']);
+let aCh = new Set();
+let CH = [];
+let EV = [];
+let mks = [];
+let refreshCountdown = 60;
+
+// ═══ MAP ═══
+const map = L.map('map', {center:[30,40], zoom:5, zoomControl:false, attributionControl:false, minZoom:3, maxZoom:14});
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {subdomains:'abcd', maxZoom:19}).addTo(map);
+map.on('mousemove', e => {
+  const {lat,lng} = e.latlng;
+  document.getElementById('coords').textContent = `${Math.abs(lat).toFixed(4)}${lat>=0?'N':'S'}, ${Math.abs(lng).toFixed(4)}${lng>=0?'E':'W'}`;
+});
+
+// ═══ HELPERS ═══
+function ago(ts) {
+  const d = Date.now() - ts;
+  const m = Math.floor(d / 60000);
+  if (m < 60) return m + 'm ago';
+  const hr = Math.floor(m / 60);
+  if (hr < 24) return hr + 'h ago';
+  return Math.floor(hr / 24) + 'd ago';
+}
+
+function fl(f) {
+  return f === 'iran' ? 'Iran / Proxy' : f === 'israel' ? 'Israel / US' : 'Unknown';
+}
+
+function escHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// No custom icon function needed — using L.circleMarker
+
+// ═══ FETCH DATA ═══
+async function fetchEvents() {
+  try {
+    const res = await fetch(`/api/events?hours=${tf}`);
+    EV = await res.json();
+  } catch (e) {
+    console.error('Failed to fetch events:', e);
+  }
+}
+
+async function fetchChannels() {
+  try {
+    const res = await fetch('/api/channels');
+    CH = await res.json();
+    aCh = new Set(CH.map(c => c.name));
+  } catch (e) {
+    console.error('Failed to fetch channels:', e);
+  }
+}
+
+async function fetchStats() {
+  try {
+    const res = await fetch(`/api/stats?hours=${tf}`);
+    const s = await res.json();
+    document.getElementById('sT').textContent = s.geo_tagged;
+    document.getElementById('sI').textContent = s.iran;
+    document.getElementById('sL').textContent = s.israel;
+  } catch (e) {
+    console.error('Failed to fetch stats:', e);
+  }
+}
+
+// ═══ FILTER ═══
+function filt() {
+  return EV.filter(e => {
+    if (!aF.has(e.f)) return false;
+    if (!aCh.has(e.channel_name)) return false;
+    return true;
+  });
+}
+
+// ═══ POPUP CONTENT ═══
+function mkP(e) {
+  const src = e.src[0];
+  const etypeBadge = e.event_type ? `<div class="pbg etype">${e.event_type}</div>` : '';
+  return `<div class="pi">
+    <div class="pb">
+      <div class="pbg ${e.f}"><span class="d"></span>${fl(e.f)}</div>
+      ${etypeBadge}
+    </div>
+    <div class="ploc">${escHtml(e.loc)}</div>
+    <div class="ptm">${ago(e.t)} &middot; ${escHtml(e.channel_name || '')}</div>
+    <div class="pdesc">${escHtml(e.desc)}</div>
+    <div class="psrc">
+      <div class="psrc-l">Source</div>
+      <div class="psl">
+        <span class="sc">@${escHtml(src.ch)}</span>
+        <span style="margin-left:auto;font-family:var(--font-mono);font-size:9px;color:var(--text-muted)">${ago(src.t)}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ═══ RENDER ═══
+function render() {
+  mks.forEach(m => map.removeLayer(m));
+  mks = [];
+  const ev = filt();
+
+  ev.forEach(e => {
+    const fc = FACTION_COLORS[e.f] || FACTION_COLORS.unknown;
+    const m = L.circleMarker([e.lat, e.lng], {
+      radius: 7,
+      fillColor: fc.fill,
+      color: fc.stroke,
+      weight: 1.5,
+      fillOpacity: fc.opacity,
+      opacity: fc.opacity,
+    });
+    m.bindPopup(mkP(e), {maxWidth: 310, closeButton: true, autoPan: true, autoPanPadding: [60,60]});
+    m.on('click', function() { this.openPopup(); });
+    m.addTo(map);
+    mks.push(m);
+  });
+
+  renderFeed(ev);
+  document.getElementById('feedCount').textContent = ev.length + ' events';
+}
+
+function renderFeed(ev) {
+  const list = document.getElementById('fList');
+  if (ev.length === 0) {
+    list.innerHTML = '<div class="no-data">No geo-tagged events in this time range</div>';
+    return;
+  }
+  list.innerHTML = ev.map(e => {
+    const etype = e.event_type ? `<span class="fi-badge etype">${e.event_type}</span>` : '';
+    return `<div class="fi" onclick="fly(${e.lat},${e.lng})">
+      <div class="fi-top">
+        <div class="fi-dot ${e.f}"></div>
+        ${etype}
+        <span class="fi-ch">${escHtml(e.channel_name||'')}</span>
+        <span class="fi-t">${ago(e.t)}</span>
+      </div>
+      <div class="fi-txt">${escHtml(e.desc)}</div>
+      <div class="fi-loc ${e.f}">${escHtml(e.loc)}</div>
+    </div>`;
+  }).join('');
+}
+
+function fly(lat, lng) {
+  map.flyTo([lat, lng], 10, {duration: 0.8});
+  setTimeout(() => {
+    const m = mks.find(m => {
+      const l = m.getLatLng();
+      return Math.abs(l.lat - lat) < 0.01 && Math.abs(l.lng - lng) < 0.01;
+    });
+    if (m) m.openPopup();
+  }, 900);
+}
+
+// ═══ CHANNELS SIDEBAR ═══
+function renderChannels() {
+  const list = document.getElementById('chList');
+  list.innerHTML = CH.map(c => {
+    const isOn = aCh.has(c.name);
+    return `<div class="ch-i ${isOn ? 'on' : ''}" onclick="togCh('${escHtml(c.name)}')">
+      <div class="ch-d" style="background:${c.color};opacity:${isOn ? 1 : 0.2}"></div>
+      <span class="ch-n">${escHtml(c.name)}</span>
+      <span class="ch-c">${c.count}</span>
+    </div>`;
+  }).join('');
+}
+
+function togCh(name) {
+  if (aCh.has(name)) aCh.delete(name);
+  else aCh.add(name);
+  renderChannels();
+  render();
+}
+
+function togFeed() {
+  const p = document.getElementById('fPanel');
+  const b = document.getElementById('fBtn');
+  p.classList.toggle('hide');
+  b.classList.toggle('hide');
+  b.innerHTML = p.classList.contains('hide') ? '&#9656;' : '&#9666;';
+}
+
+// ═══ CONTROLS ═══
+document.querySelectorAll('.t-btn').forEach(b => b.addEventListener('click', async () => {
+  document.querySelectorAll('.t-btn').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  tf = parseInt(b.dataset.hours);
+  await refresh();
+}));
+
+document.querySelectorAll('[data-faction]').forEach(cb => cb.addEventListener('change', e => {
+  const f = e.target.dataset.faction;
+  if (e.target.checked) aF.add(f); else aF.delete(f);
+  render();
+}));
+
+// ═══ REFRESH LOOP ═══
+async function refresh() {
+  await Promise.all([fetchEvents(), fetchChannels(), fetchStats()]);
+  renderChannels();
+  render();
+  refreshCountdown = 60;
+}
+
+setInterval(() => {
+  refreshCountdown--;
+  if (refreshCountdown <= 0) {
+    refresh();
+  }
+  document.getElementById('timer').textContent = `Next refresh: ${refreshCountdown}s`;
+}, 1000);
+
+// ═══ INIT ═══
+refresh();
+</script>
+</body>
+</html>

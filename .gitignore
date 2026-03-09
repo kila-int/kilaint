@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+*.session
+*.session-journal
+tg_ingest.py
+.env
