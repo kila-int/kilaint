@@ -13,6 +13,10 @@ import sys
 import os
 import argparse
 
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def run(cmd, description):

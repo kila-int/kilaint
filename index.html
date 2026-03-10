@@ -50,6 +50,7 @@
   .header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; height: 50px; background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 22px; }
   .header::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent 0%, var(--accent) 30%, var(--accent) 70%, transparent 100%); opacity: 0.2; }
   .site-name { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--neon); letter-spacing: 3px; text-transform: uppercase; }
+  .header-right { display: flex; align-items: center; gap: 16px; }
   .legend-row { display: flex; align-items: center; gap: 14px; padding-right: 14px; border-right: 1px solid var(--border); }
   .legend-item { display: flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 10px; color: var(--text-secondary); }
   .legend-dot { width: 7px; height: 7px; border-radius: 50%; }
@@ -141,8 +142,8 @@
   .fi-loc.israel { color: var(--israel); }
   .fi-loc.unknown { color: var(--unknown); }
 
-  .leaflet-popup-content-wrapper { background: #0e160c !important; border: 1px solid var(--border-strong) !important; border-radius: 3px !important; box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important; padding: 0 !important; min-width: 270px; }
-  .leaflet-popup-tip { background: #0e160c !important; border: 1px solid var(--border-strong) !important; border-top:none !important; border-left:none !important; }
+  .leaflet-popup-content-wrapper { background: var(--bg-panel) !important; border: 1px solid var(--border-strong) !important; border-radius: 3px !important; box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important; padding: 0 !important; min-width: 270px; }
+  .leaflet-popup-tip { background: var(--bg-panel) !important; border: 1px solid var(--border-strong) !important; border-top:none !important; border-left:none !important; }
   .leaflet-popup-close-button { color: var(--text-muted) !important; font-size: 18px !important; right: 8px !important; top: 8px !important; }
   .leaflet-popup-close-button:hover { color: var(--accent) !important; }
   .leaflet-popup-content { margin: 0 !important; }
@@ -162,7 +163,10 @@
   .psrc-l { font-family: var(--font-mono); font-size: 8px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 6px; }
   .psl { display: flex; align-items: center; gap: 7px; padding: 5px 8px; margin-bottom: 3px; border-radius: 2px; text-decoration: none; color: var(--text-secondary); font-size: 11px; background: rgba(160,200,48,0.03); border: 1px solid transparent; }
   .psl:hover { background: var(--bg-hover); color: var(--text); border-color: var(--border); }
-  .psl .sc { font-family: var(--font-mono); font-size: 9px; color: var(--accent); opacity: 0.7; }
+  .psl .sc { font-family: var(--font-mono); font-size: 9px; color: var(--accent); opacity: 0.7; text-decoration: none; }
+  .tg-link:hover { opacity: 1; }
+  .tg-open { display: block; text-align: center; padding: 7px 0; margin: 6px 12px 10px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); text-decoration: none; border: 1px solid var(--border-strong); border-radius: 3px; background: var(--accent-dim); }
+  .tg-open:hover { background: var(--accent); color: #111; }
   .coords { position: fixed; bottom: 10px; left: 290px; z-index: 999; font-family: var(--font-mono); font-size: 9px; color: var(--text-muted); background: var(--bg-panel); padding: 3px 10px; border: 1px solid var(--border); border-radius: 2px; letter-spacing: 0.5px; }
 
   .hud-corner { position: fixed; z-index: 998; pointer-events: none; width: 30px; height: 30px; }
@@ -181,6 +185,14 @@
 
 <div class="header">
   <span class="site-name">KilaInt</span>
+  <div class="header-right">
+    <div class="legend-row">
+      <div class="legend-item"><div class="legend-dot iran"></div>Iran / Proxy</div>
+      <div class="legend-item"><div class="legend-dot israel"></div>Israel / US</div>
+      <div class="legend-item"><div class="legend-dot unknown"></div>Unknown</div>
+    </div>
+    <div class="live-badge"><div class="live-dot"></div><span>LIVE</span></div>
+  </div>
 </div>
 
 <div class="hud-compass" id="compass"></div>
@@ -336,6 +348,7 @@ function filt() {
 function mkP(e) {
   const src = e.src[0];
   const etypeBadge = e.event_type ? `<div class="pbg etype">${e.event_type}</div>` : '';
+  const tgLink = `https://t.me/${encodeURIComponent(src.ch)}/${src.msg}`;
   return `<div class="pi">
     <div class="pb">
       <div class="pbg ${e.f}"><span class="d"></span>${fl(e.f)}</div>
@@ -347,19 +360,23 @@ function mkP(e) {
     <div class="psrc">
       <div class="psrc-l">Source</div>
       <div class="psl">
-        <span class="sc">@${escHtml(src.ch)}</span>
+        <a href="${tgLink}" target="_blank" rel="noopener" class="sc tg-link">@${escHtml(src.ch)}</a>
         <span style="margin-left:auto;font-family:var(--font-mono);font-size:9px;color:var(--text-muted)">${ago(src.t)}</span>
       </div>
     </div>
+    <a href="${tgLink}" target="_blank" rel="noopener" class="tg-open">View on Telegram</a>
   </div>`;
 }
 
 // ═══ RENDER ═══
 function jitter(lat, lng, index, total) {
-  // Spread stacked markers in a spiral around the center point
   if (total <= 1) return [lat, lng];
-  const r = 0.012 + 0.006 * Math.floor(index / 8); // radius grows with more markers
-  const angle = (index / total) * 2 * Math.PI + index * 0.5;
+  // Random scatter within a radius, seeded by index for consistency
+  const seed = index * 2654435761 % 2147483647;
+  const a1 = (seed % 1000) / 1000;
+  const a2 = ((seed * 7) % 1000) / 1000;
+  const r = 0.008 + 0.012 * a1;
+  const angle = a2 * 2 * Math.PI;
   return [lat + r * Math.cos(angle), lng + r * Math.sin(angle)];
 }
 
@@ -504,7 +521,7 @@ setInterval(() => {
   if (refreshCountdown <= 0) {
     refresh();
   }
-  document.getElementById('timer').textContent = `Next refresh: ${refreshCountdown}s`;
+  // timer removed
 }, 1000);
 
 // ═══ INIT ═══
